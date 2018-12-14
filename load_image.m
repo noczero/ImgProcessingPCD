@@ -22,7 +22,7 @@ function varargout = load_image(varargin)
 
 % Edit the above text to modify the response to help load_image
 
-% Last Modified by GUIDE v2.5 30-Oct-2018 00:58:22
+% Last Modified by GUIDE v2.5 11-Dec-2018 13:20:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -85,7 +85,9 @@ function push_btn_browse_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global read_img; % define global variable
-[filename pathname] = uigetfile({'*.jpg;*.png;*.jpeg'}, 'File Selector')
+global statusGrayScale;
+statusGrayScale = 0;
+[filename pathname] = uigetfile({'*.jpg;*.png;*.jpeg'}, 'File Selector');
 img_path = strcat(pathname ,filename);
 read_img = imread(img_path);
 axes(handles.axes_picture);
@@ -99,6 +101,17 @@ set(handles.push_btn_up , 'Enable' , 'on');
 set(handles.push_btn_down, 'Enable', 'on');
 set(handles.push_btn_right, 'Enable','on');
 set(handles.push_btn_left,'Enable','on');
+set(handles.btn_histogram,'Enable','on');
+set(handles.push_btn_histeq, 'Enable', 'on');
+set(handles.value_threshold, 'Enable', 'on');
+set(handles.value_rep_threshold, 'Enable', 'on');
+set(handles.push_btn_threshold, 'Enable', 'on');
+set(handles.value_x, 'Enable', 'on');
+set(handles.value_y, 'Enable', 'on');
+set(handles.push_btn_reg_growth, 'Enable', 'on');
+set(handles.value_histeq, 'Enable', 'on');
+set(handles.push_btn_blur, 'Enable', 'on');
+set(handles.push_btn_edge, 'Enable', 'on');
 
 % set resoultion
 [rows cols] = size(read_img);
@@ -342,16 +355,224 @@ function btn_histogram_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global read_img;
 
-histo = myHistogram(read_img);
-n = 1:255;
+% get image from axes_res_pict
+axes_res = getimage(handles.axes_res_picture);
+if(~isempty(axes_res))
+    histo = myHistogram(axes_res);
+else
+    histo = myHistogram(read_img);
+end
+n = 1:256;
 axes(handles.axes_histogram);
-red = area(n, histo(1,2:256));
+cla
+red = area(n, histo(1,:));
 red.FaceColor = 'red';
 hold on
-green = area(n,histo(2,2:256));
+green = area(n,histo(2,:));
 green.FaceColor = 'green';
 hold on
-blue = area(n,histo(3,2:256));
+blue = area(n,histo(3,:));
 blue.FaceColor = 'blue';
 
 grid off;
+
+
+
+% --- Executes on button press in push_btn_histeq.
+function push_btn_histeq_Callback(hObject, eventdata, handles)
+% hObject    handle to push_btn_histeq (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global read_img;
+range = get(handles.value_histeq, 'String');
+
+img_histeq = myHisteq(read_img , str2num(range));
+axes(handles.axes_res_picture);
+imshow(img_histeq);
+
+
+
+
+function value_histeq_Callback(hObject, eventdata, handles)
+% hObject    handle to value_histeq (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of value_histeq as text
+%        str2double(get(hObject,'String')) returns contents of value_histeq as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function value_histeq_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to value_histeq (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in push_btn_blur.
+function push_btn_blur_Callback(hObject, eventdata, handles)
+% hObject    handle to push_btn_blur (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global grayscale_img;
+global read_img;
+global statusGrayScale;
+
+if (statusGrayScale)
+    result = myBlur2(grayscale_img);
+else
+    result = myBlur2(read_img);
+end
+axes(handles.axes_res_picture);
+imshow(result);
+
+
+
+% --- Executes on button press in push_btn_edge.
+function push_btn_edge_Callback(hObject, eventdata, handles)
+% hObject    handle to push_btn_edge (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global grayscale_img;
+global read_img;
+global statusGrayScale;
+
+if (statusGrayScale)
+    result = myEdgeDetection(grayscale_img);
+else
+    result = myEdgeDetection(read_img);
+end
+
+axes(handles.axes_res_picture);
+imshow(result);
+
+
+
+% --- Executes on button press in push_btn_convolve.
+function push_btn_convolve_Callback(hObject, eventdata, handles)
+% hObject    handle to push_btn_convolve (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+function value_threshold_Callback(hObject, eventdata, handles)
+% hObject    handle to value_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of value_threshold as text
+%        str2double(get(hObject,'String')) returns contents of value_threshold as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function value_threshold_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to value_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function value_rep_threshold_Callback(hObject, eventdata, handles)
+% hObject    handle to value_rep_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of value_rep_threshold as text
+%        str2double(get(hObject,'String')) returns contents of value_rep_threshold as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function value_rep_threshold_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to value_rep_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function value_x_Callback(hObject, eventdata, handles)
+% hObject    handle to value_x (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of value_x as text
+%        str2double(get(hObject,'String')) returns contents of value_x as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function value_x_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to value_x (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function value_y_Callback(hObject, eventdata, handles)
+% hObject    handle to value_y (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of value_y as text
+%        str2double(get(hObject,'String')) returns contents of value_y as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function value_y_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to value_y (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in push_btn_reg_growth.
+function push_btn_reg_growth_Callback(hObject, eventdata, handles)
+% hObject    handle to push_btn_reg_growth (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global grayscale_img;
+value_x = get(handles.value_x, 'String');
+value_y = get(handles.value_y, 'String');
+result = myRegionGrowth(grayscale_img , str2num(value_x) , str2num(value_y), 30);
+axes(handles.axes_res_picture);
+imshow(result);
+
+% --- Executes on button press in push_btn_threshold.
+function push_btn_threshold_Callback(hObject, eventdata, handles)
+% hObject    handle to push_btn_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global grayscale_img;
+value_threshold = get(handles.value_threshold, 'String');
+value_ths_rep = get(handles.value_rep_threshold, 'String');
+result = myThreshold(grayscale_img, str2num(value_threshold), str2num(value_ths_rep));
+axes(handles.axes_res_picture);
+imshow(result);

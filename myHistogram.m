@@ -1,6 +1,6 @@
 function [ result ] = myHistogram( img )
 %MYHISTOGRAM Summary of this function goes here
-%   input RGB image
+% input RGB image
 % output count of each value on RGB
 result = zeros(3,256); % create array 3 element
 

@@ -9,12 +9,13 @@ function [ res ] = myShifting( img , type , shift_val )
         result_img(1:rows, 1+shift_val:cols+shift_val,:) = img;
     % left
     elseif (type == '2')
-        black_add = zeros(rows,shift_val, w, class(img));
+        black_add = zeros(rows,); zeros(rows,cols, type, class(image));
+        tmp_img(:,:,1) = horzcat(img(:,:,1), black_add);
+        res_img =
         result_img = horzcat(img,black_add);
     % up
     elseif (type == '3')
-        black_add = zeros(shift_val,cols, w, class(img));
-        result_img = vertcat(img,black_add);
+        result_img(1:rows+shift_val , 1:cols,:) = img;
     % down
     elseif (type == '4')
         result_img(1+shift_val:rows+shift_val , 1:cols , :) = img;
